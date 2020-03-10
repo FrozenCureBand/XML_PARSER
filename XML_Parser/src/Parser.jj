@@ -1,0 +1,103 @@
+options
+{
+  IGNORE_CASE = true;
+  STATIC = true;
+}
+
+/*
+
+initialize the parse method and start to parse when call this method. This method will return the AST based on the query we get.
+
+*/
+PARSER_BEGIN(Parser)
+public class Parser
+{static int i;}
+PARSER_END(Parser)
+/*
+set up tokens first. SKIP tokens of " ", "\t", "\r" and "\n"
+*/
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN : /* OPERATORS */
+{
+  < PLUS : "+" >
+| < MINUS : "-" >
+| < TIMES : "*" >
+| < DIVIDE : "/" >
+}
+
+TOKEN :
+{
+  < NUMBER : (<DIGIT>)+  >
+| 
+  < WORD : (<LETTER>)+>
+|
+  < LEFT_TAG : "<" >
+|
+  < RIGHT_TAG : ">" >
+|
+  < VERSION : <NUMBER> "." <NUMBER> >
+|
+  < ENCODING : "BIG5" | "EUC-JP" | "EUC-KR" | "GB18030" | "ISO-2022-JP" | "ISO-2022-KR"
+  | "ISO-8859-1" | "ISO-8859-2"| "ISO-8859-3" | "ISO-8859-4" | "ISO-8859-5"
+  | "ISO-8859-6"| "ISO-8859-7" | "ISO-8859-8" | "ISO-8859-9" | "SHIFT_JIS"
+  | "TIS-620" | "US-ASCII" | "UTF-8" | "UTF-16" | "UTF-16BE"| "UTF-16LE"
+  | "WINDOWS-31J" | "WINDOWS-1255" | "WINDOWS-1256" >
+|
+  < STANDALONE : "yes" | "YES" | "no" | "NO" >
+}
+
+TOKEN :
+{
+  <#DIGIT: ["0"-"9"]>
+| <#LETTER: ["a"-"z", "A"-"Z"]>
+}
+int start() :
+{}
+{
+  XML()   // "well formed formula"
+  {
+    return 0;  // returns 0 on successful parse
+  }
+}
+
+void XML() :
+{}
+{
+  PROLOGO()
+}
+
+void PROLOGO() :
+{}
+{
+  <LEFT_TAG> ( VERSION() ENCODING() ) | (VERSION() ENCODING() STANDALONE() ) <RIGHT_TAG>
+}
+
+void VERSION() :
+{Token t;}
+{
+   "?xml version=" "\"" t=<VERSION> "\""
+   { System.out.println("La versión es: "  + t.image); }
+}
+
+void ENCODING() :
+{Token t;}
+{
+   "encoding=" "\"" t=<ENCODING> "\""
+   { System.out.println("La decodificación usada es: "  + t.image); }
+}
+
+void STANDALONE() :
+{Token t;}
+{
+   "standalone=" "\"" t=<STANDALONE> "\"" "?"
+   { System.out.println("¿Es Standalone?: "  + t.image); }
+}
+
+
