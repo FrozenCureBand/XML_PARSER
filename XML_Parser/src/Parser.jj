@@ -50,8 +50,8 @@ TOKEN :
   | "TIS-620" | "US-ASCII" | "UTF-8" | "UTF-16" | "UTF-16BE"| "UTF-16LE"
   | "WINDOWS-31J" | "WINDOWS-1255" | "WINDOWS-1256" >
 |
-  < TYPE : "text/css">
-| 
+  < TYPE : "xs:string"|"xs:decimal"|"xs:integer"|"xs:boolean"|"xs:date"|"xs:time">
+|
   < STANDALONE : "yes" | "YES" | "no" | "NO" >
 }
 
@@ -63,7 +63,7 @@ TOKEN :
 int start() :
 {}
 {
-  XML()   // "well formed formula"
+  XML()<EOF>   // "well formed formula"
   {
     return 0;  // returns 0 on successful parse
   }
@@ -74,32 +74,35 @@ void XML() :
 {
   PROLOGO()
 }
-
+//t=<STANDALONE>
 void PROLOGO() :
 {}
 {
-  <LEFT_TAG> ( VERSION() ENCODING() ( STANDALONE())? ) <TAG_PROLOG><RIGHT_TAG>
+  <LEFT_TAG> <TAG_PROLOG> VERSION() ENCODING() STANDALONE()  <TAG_PROLOG> <RIGHT_TAG>
 }
 
 void VERSION() :
 {Token t;}
 {
-   "?xml version=" "\"" t=<VERSION> "\""
-   { System.out.println("La versión es: "  + t.image); }
+   "xml version=" "\"" t=<VERSION> "\""
+   { System.out.println("La versiÃ³n es: "  + t.image); }
 }
 
 void ENCODING() :
 {Token t;}
 {
    "encoding=" "\"" t=<ENCODING> "\""
-   { System.out.println("La decodificación usada es: "  + t.image); }
+   { System.out.println("La decodificaciÃ³n usada es: "  + t.image); }
 }
 
 void STANDALONE() :
 {Token t;}
 {
    "standalone=" "\"" t=<STANDALONE> "\"" 
-   { System.out.println("¿Es Standalone?: "  + t.image); }
+   { System.out.println("Â¿Es Standalone?: "  + t); }
 }
+
+
+
 
 
