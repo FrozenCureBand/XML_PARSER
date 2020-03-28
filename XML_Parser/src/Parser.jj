@@ -29,7 +29,7 @@ TOKEN : /* OPERATORS */
   < PLUS : "+" >
 | < MINUS : "-" >
 | < TIMES : "*" >
-| < DIVIDE : "/" >
+| < CLOSE_TAG : "/" >
 }
 
 TOKEN :
@@ -51,19 +51,20 @@ TOKEN :
   | "WINDOWS-31J" | "WINDOWS-1255" | "WINDOWS-1256" >
 |
   < TYPE : "xs:string"|"xs:decimal"|"xs:integer"|"xs:boolean"|"xs:date"|"xs:time">
-|
-  < STANDALONE : "yes" | "YES" | "no" | "NO" >
+| 
+  < STANDALONE : "yes" | "no" >
 }
 
 TOKEN :
 {
   <#DIGIT: ["0"-"9"]>
 | <#LETTER: ["a"-"z", "A"-"Z"]>
+| <WORD : (<LETTER>)+>
 }
 int start() :
 {}
 {
-  XML()<EOF>   // "well formed formula"
+  XML()   // "well formed formula"
   {
     return 0;  // returns 0 on successful parse
   }
@@ -72,19 +73,19 @@ int start() :
 void XML() :
 {}
 {
-  PROLOGO()
+  PROLOGO()XML_BODY()
 }
-//t=<STANDALONE>
+
 void PROLOGO() :
 {}
 {
-  <LEFT_TAG> <TAG_PROLOG> VERSION() ENCODING() STANDALONE()  <TAG_PROLOG> <RIGHT_TAG>
+  <LEFT_TAG> ( VERSION() ENCODING() ( STANDALONE())? ) <TAG_PROLOG><RIGHT_TAG>
 }
 
 void VERSION() :
 {Token t;}
 {
-   "xml version=" "\"" t=<VERSION> "\""
+   "?xml version=" "\"" t=<VERSION> "\""
    { System.out.println("La versión es: "  + t.image); }
 }
 
@@ -99,10 +100,17 @@ void STANDALONE() :
 {Token t;}
 {
    "standalone=" "\"" t=<STANDALONE> "\"" 
-   { System.out.println("¿Es Standalone?: "  + t); }
+   { System.out.println("¿Es Standalone?: "  + t.image); }
 }
-
-
-
-
-
+void XML_BODY() :
+{Token open,close, content; String o,c;}
+{
+  
+  //Root
+  <LEFT_TAG> (open=<WORD>) <RIGHT_TAG> (content=<WORD>) <LEFT_TAG> <CLOSE_TAG> (close=<WORD>) <RIGHT_TAG>
+  {
+    o=open.image;
+  	c=close.image;
+    Engine.CorrectTag(o,c);
+ }
+}
